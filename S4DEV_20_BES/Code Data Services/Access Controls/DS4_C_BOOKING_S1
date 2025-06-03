@@ -1,0 +1,9 @@
+@EndUserText.label: 'Solution: Authorization'
+@MappingRole: true
+define role DS4_C_BOOKING_S1 {
+    grant
+        select on DS4_C_Booking_S1
+            where inheriting conditions 
+                        from entity DS4_I_Booking;
+                        
+}
