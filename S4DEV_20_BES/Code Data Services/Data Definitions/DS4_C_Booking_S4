@@ -1,0 +1,31 @@
+@EndUserText.label: 'Solution: Booking'
+@AccessControl.authorizationCheck: #CHECK
+
+@Metadata.allowExtensions: true
+
+define view entity DS4_C_Booking_S4
+  as projection on DS4_I_Booking
+{
+
+  key BookingGuid,
+      AirlineID,      
+      ConnectionNumber,
+      FlightDate,
+      BookingNumber,
+
+      BookingDate,
+      Class,
+
+      ForeignCurrencyPayment,
+      
+      ForeignCurrency,
+      
+      AgencyNumber,
+      CustomerGuid,
+
+      IsCancelled,
+
+      /* Associations */
+      _Customer : redirected to parent DS4_C_Customer_S4
+
+}
