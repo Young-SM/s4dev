@@ -1,0 +1,9 @@
+@EndUserText.label: 'Flight Booking Authorization' 
+@MappingRole: true 
+define role Z20_I_BOOKING
+{ 
+     grant select 
+        on Z20_I_BOOKING 
+            where (AirlineID) = aspect pfcg_auth(S_CARRID, CARRID, ACTVT = '03'); 
+}
+     

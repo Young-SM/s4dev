@@ -1,0 +1,11 @@
+@EndUserText.label: 'Booking Authorization'
+@MappingRole: true
+define role Z20_C_BOOKING {
+    grant
+        select
+            on
+                Z20_C_Booking
+                    where
+                        inheriting conditions from entity Z20_I_Booking;
+                        
+}

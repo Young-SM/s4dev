@@ -1,0 +1,84 @@
+@Metadata.layer: #CUSTOMER
+@UI: { 
+    headerInfo: 
+    { 
+        typeName: 'Flight Customer', 
+        typeNamePlural: 'Flight Customers', 
+        title: { value: 'CustomerName' }, 
+        description: { value: 'City' } 
+    }
+}
+annotate view Z20_C_Customer with
+{
+  @UI.facet: [ 
+      { label: 'Customer Data', type: #IDENTIFICATION_REFERENCE }, 
+      { label: 'Bookings', type: #LINEITEM_REFERENCE, 
+                targetElement: '_Bookings' }
+  ]
+
+  @UI.hidden
+  CustomerGuid;
+  
+  @UI: { 
+    lineItem: [ { position: 10, importance: #HIGH } ], 
+    identification: [ { position: 10, importance: #HIGH } ] 
+  }
+  CustomerNumber;
+  
+  @UI: { 
+    identification: [ { position: 15, importance: #MEDIUM } ] 
+  }
+  Form;
+  
+  @UI: { 
+    lineItem: [ { position: 20, importance: #HIGH } ], 
+    identification: [ { position: 20, importance: #HIGH } ] 
+  }
+  CustomerName;
+  
+  @UI: { 
+    lineItem: [ { position: 30, importance: #MEDIUM } ], 
+    identification: [ { position: 30, importance: #MEDIUM } ] 
+  }
+  Street;
+  
+  @UI: { 
+    selectionField: [{ position: 40 }],
+    lineItem: [ { position: 40, importance: #MEDIUM } ], 
+    identification: [ { position: 40, importance: #MEDIUM } ] 
+  }
+  PostCode;
+  
+  @UI: { 
+    lineItem: [ { position: 50, importance: #HIGH } ], 
+    identification: [ { position: 50, importance: #HIGH } ] 
+  }
+  City;
+  
+  @UI: {       
+    selectionField: [{ position: 60 }],  
+    lineItem: [ { position: 60, importance: #MEDIUM } ], 
+    identification: [ { position: 60, importance: #MEDIUM } ] 
+  }
+  Country;
+  
+  @UI: { 
+    lineItem: [ { position: 70, importance: #MEDIUM } ], 
+    identification: [ { position: 70, importance: #MEDIUM } ] 
+  }
+  Email;
+  
+  @UI: { 
+    identification: [ { position: 75, importance: #MEDIUM } ] 
+  }
+  Telephone;
+  
+  @UI: { 
+    lineItem: [ { position: 80, importance: #MEDIUM } ], 
+    identification: [ { position: 80, importance: #LOW } ] 
+  }
+  Discount;
+  
+  @UI.hidden
+  changed_at;
+}
