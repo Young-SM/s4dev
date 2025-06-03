@@ -1,0 +1,9 @@
+@EndUserText.label: 'Solution: Transactional Processing - Authorization'
+@MappingRole: true
+define role DS4_C_BOOKING_S4 {
+    grant
+        select on DS4_C_Booking_S4
+            where inheriting conditions 
+                        from entity DS4_I_Booking;
+                        
+}
