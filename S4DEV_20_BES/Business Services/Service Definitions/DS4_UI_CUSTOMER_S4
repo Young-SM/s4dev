@@ -1,0 +1,5 @@
+@EndUserText.label: 'Solution: Service Definition for UI'
+define service DS4_UI_CUSTOMER_S4 {
+  expose DS4_C_Customer_S4;
+  expose DS4_C_Booking_S4;
+}
