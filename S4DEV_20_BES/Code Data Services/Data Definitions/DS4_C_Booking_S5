@@ -1,0 +1,51 @@
+@EndUserText.label: 'Solution: Booking'
+@AccessControl.authorizationCheck: #CHECK
+
+@Metadata.allowExtensions: true
+
+define view entity DS4_C_Booking_S5
+  as projection on DS4_I_Booking
+{
+
+  key BookingGuid,
+
+      @Consumption.valueHelpDefinition: [{ entity.name:    'DS4_I_FlightVH',
+                                           entity.element: 'AirlineID',
+                                           additionalBinding: [{ element:      'ConnectionNumber',
+                                                                 localElement: 'ConnectionNumber',
+                                                                 usage:         #RESULT },
+
+                                                               { element:      'FlightDate',
+                                                                 localElement: 'FlightDate',
+                                                                 usage:         #RESULT }
+                                                              ]
+                                        }]
+      AirlineID,
+
+      ConnectionNumber,
+      FlightDate,
+      BookingNumber,
+      BookingDate,
+
+      @Consumption.valueHelpDefinition: [{ entity.name:    'DS4_I_FlightClassVH',
+                                           entity.element: 'FlightClass'
+                                        }]
+      Class,
+
+      ForeignCurrencyPayment,
+
+      @Consumption.valueHelpDefinition: [{ entity.name:    'I_Currency',
+                                           entity.element: 'Currency' }]
+      ForeignCurrency,
+
+      @Consumption.valueHelpDefinition: [{ entity.name:    'DS4_I_TravelAgency',
+                                           entity.element: 'AgencyNumber' }]
+      AgencyNumber,
+
+      CustomerGuid,
+      IsCancelled,
+
+      /* Associations */
+      _Customer : redirected to parent DS4_C_Customer_S5
+
+}
