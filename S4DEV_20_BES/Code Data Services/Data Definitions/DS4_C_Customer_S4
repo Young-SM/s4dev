@@ -1,0 +1,37 @@
+@EndUserText.label: 'Solution: Customer'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+
+@Search.searchable: true
+@Metadata.allowExtensions: true
+
+define root view entity DS4_C_Customer_S4
+  as projection on DS4_I_Customer
+{
+  key CustomerGuid,
+
+      CustomerNumber,
+
+      Form,
+
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+      CustomerName,
+
+      Street,
+      PostCode,
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+
+      City,
+      Country,
+
+      Email,
+      Telephone,
+      Discount,
+
+      changed_at,
+
+      /* Associations */
+      _Bookings : redirected to composition child DS4_C_Booking_S4
+
+}
