@@ -1,0 +1,224 @@
+CLASS bp_ds4_i_customer DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF ds4_i_customer.
+ENDCLASS.
+
+
+
+CLASS BP_DS4_I_CUSTOMER IMPLEMENTATION.
+ENDCLASS.
+
+CLASS lhc_customer DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS create_customernumber FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR customer~create_customernumber.
+
+    METHODS filled_customername FOR VALIDATE ON SAVE
+      IMPORTING keys FOR customer~filled_customername.
+
+    METHODS get_authorizations FOR AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR customer RESULT result.
+
+ENDCLASS.
+
+CLASS lhc_customer IMPLEMENTATION.
+
+  METHOD create_customernumber.
+
+    READ ENTITY IN LOCAL MODE ds4_i_customer
+      FIELDS ( customernumber )
+       WITH CORRESPONDING #( keys )
+        RESULT DATA(lt_customers).
+
+    LOOP AT lt_customers ASSIGNING FIELD-SYMBOL(<ls_customer>).
+
+      IF <ls_customer>-customernumber IS INITIAL.
+
+        " draw a number from a number range
+        CALL FUNCTION 'NUMBER_GET_NEXT'
+          EXPORTING
+            nr_range_nr = '01'
+            object      = 'SBUSPID'
+          IMPORTING
+            number      = <ls_customer>-customernumber.
+
+      ENDIF.
+
+    ENDLOOP.
+
+    " Update the changed data (customer id) of the entity instances
+    MODIFY ENTITY IN LOCAL MODE ds4_i_customer
+        UPDATE FIELDS ( customernumber )
+         WITH CORRESPONDING #( lt_customers ).
+
+  ENDMETHOD.
+
+
+  METHOD filled_customername.
+
+    CONSTANTS lc_state_area TYPE string VALUE `CUSTNAME`.
+
+    READ ENTITY IN LOCAL MODE ds4_i_customer
+      FIELDS ( customername )
+       WITH CORRESPONDING #( keys )
+        RESULT DATA(lt_customers).
+
+    LOOP AT lt_customers ASSIGNING FIELD-SYMBOL(<ls_customer>).
+
+      " Delete previous state messages
+      APPEND VALUE #( %tky = <ls_customer>-%tky
+                      %state_area = lc_state_area )
+          TO reported-customer.
+
+      IF strlen( <ls_customer>-customername ) = 0 .
+
+        " Report an ERROR message
+        APPEND VALUE #( %tky = <ls_customer>-%tky
+                        %msg = NEW cm_customer_rap(
+                                    textid = cm_customer=>no_name
+                                     severity = if_abap_behv_message=>severity-error )
+                        %element-customername = if_abap_behv=>mk-on
+                        %state_area = lc_state_area
+                       )
+            TO reported-customer.
+
+        APPEND VALUE #( %tky = <ls_customer>-%tky ) TO failed-customer.
+
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD get_authorizations.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_booking DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS create_bookingnumber FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR booking~create_bookingnumber.
+
+    METHODS set_bookingdate FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR booking~set_bookingdate.
+
+    METHODS get_authorizations FOR AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR booking RESULT result.
+
+    METHODS cancel_booking FOR MODIFY
+      IMPORTING keys FOR ACTION booking~cancel_booking.
+
+    METHODS get_highest_used_id RETURNING VALUE(rv_max_bookid) TYPE s_book_id.
+
+ENDCLASS.
+
+CLASS lhc_booking IMPLEMENTATION.
+
+  METHOD create_bookingnumber.
+
+    READ ENTITY IN LOCAL MODE ds4_i_booking
+      FIELDS ( bookingnumber )
+        WITH CORRESPONDING #( keys )
+         RESULT DATA(lt_bookings).
+
+    " Find the highest used booking id in both active and draft data
+    " In a real application you might draw a number from a number range
+    DATA(lv_max_bookid) = me->get_highest_used_id( ).
+
+    LOOP AT lt_bookings ASSIGNING FIELD-SYMBOL(<ls_booking>).
+
+      IF <ls_booking>-bookingnumber IS INITIAL.
+        ADD 1 TO lv_max_bookid.
+        <ls_booking>-bookingnumber = lv_max_bookid.
+      ENDIF.
+
+    ENDLOOP.
+
+    " Update the changed data (booking id) of the node instance
+    MODIFY ENTITY IN LOCAL MODE ds4_i_booking
+       UPDATE FIELDS ( bookingnumber )
+         WITH CORRESPONDING #( lt_bookings ).
+
+  ENDMETHOD.
+
+  METHOD set_bookingdate.
+
+    "read booking node data with the given key
+    READ ENTITY IN LOCAL MODE ds4_i_booking
+      FIELDS (  bookingdate )
+        WITH CORRESPONDING #(  keys )
+         RESULT DATA(lt_bookings).
+
+    " Loop over bookings that are to be processed by the determination
+    LOOP AT lt_bookings ASSIGNING FIELD-SYMBOL(<ls_booking>).
+
+      IF <ls_booking>-bookingdate IS INITIAL.
+        <ls_booking>-bookingdate = sy-datum.
+      ENDIF.
+
+    ENDLOOP.
+
+    "  update the node instances
+    MODIFY ENTITY IN LOCAL MODE ds4_i_booking
+      UPDATE FIELDS ( bookingdate )
+       WITH CORRESPONDING #( lt_bookings ).
+
+  ENDMETHOD.
+
+  METHOD get_authorizations.
+  ENDMETHOD.
+
+  METHOD cancel_booking.
+
+    "read booking node data with the given keys
+    READ ENTITY IN LOCAL MODE ds4_i_booking
+      FIELDS (  flightdate iscancelled )
+        WITH CORRESPONDING #( keys )
+         RESULT DATA(lt_bookings).
+
+    " Loop over all bookings that are to be processed by the action
+    LOOP AT lt_bookings ASSIGNING FIELD-SYMBOL(<ls_booking>).
+
+      IF <ls_booking>-flightdate >= sy-datum.
+        <ls_booking>-iscancelled = abap_true.
+      ELSE.
+        " Raise an ERROR message
+        APPEND VALUE #( %tky = <ls_booking>-%tky
+                        %msg = NEW cm_customer_rap(
+                                 textid     = cm_customer=>date_in_past
+                                 severity = cm_customer=>c_severity-error )
+                      )
+            TO reported-booking.
+
+        APPEND VALUE #( %tky = <ls_booking>-%tky ) TO failed-booking.
+      ENDIF.
+
+    ENDLOOP.
+
+    "  update the node instances
+    MODIFY ENTITY IN LOCAL MODE ds4_i_booking
+      UPDATE FIELDS ( iscancelled )
+       WITH CORRESPONDING #( lt_bookings ).
+
+  ENDMETHOD.
+
+  METHOD get_highest_used_id.
+
+    WITH +both AS ( SELECT bookid AS id FROM ds4book                "active data
+                        UNION
+                    SELECT bookingnumber AS id FROM ds4book_rap_d   "draft data
+                   )
+     SELECT SINGLE
+       FROM +both
+        FIELDS MAX( id )
+         INTO @rv_max_bookid.
+
+
+    " If there are no entries, set a start value
+    IF rv_max_bookid IS INITIAL.
+      rv_max_bookid = '00050000'.
+    ENDIF.
+
+  ENDMETHOD.
+
+ENDCLASS.
