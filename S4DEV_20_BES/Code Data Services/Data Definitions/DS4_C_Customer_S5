@@ -1,0 +1,45 @@
+@EndUserText.label: 'Solution: Customer'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+
+@Search.searchable: true
+@Metadata.allowExtensions: true
+
+define root view entity DS4_C_Customer_S5
+  as projection on DS4_I_Customer
+{
+  key CustomerGuid,
+
+      CustomerNumber,
+
+      Form,
+
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+      CustomerName,
+
+      Street,
+      PostCode,
+
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+
+      @Consumption.valueHelpDefinition: [{ entity.name:    'DS4_I_City',
+                                           entity.element: 'City',
+                                           additionalBinding: [{ element: 'Country',
+                                                                 localElement: 'Country',
+                                                                 usage: #FILTER_AND_RESULT}
+                                                              ]
+                                         }]
+      City,
+
+      Country,
+
+      Email,
+      Telephone,
+      Discount,
+      changed_at,
+
+      /* Associations */
+      _Bookings : redirected to composition child DS4_C_Booking_S5
+
+}
