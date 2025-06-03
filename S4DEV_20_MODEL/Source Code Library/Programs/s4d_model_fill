@@ -1,0 +1,233 @@
+*&---------------------------------------------------------------------*
+*& Report S4D_MODEL_FILL
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT s4d_model_fill.
+
+CLASS lcl_data_copy DEFINITION.
+
+  PUBLIC SECTION.
+
+    CLASS-METHODS
+      copy.
+
+  PRIVATE SECTION.
+
+    CLASS-METHODS
+      copy_and_add_guid
+        IMPORTING
+          iv_source_table TYPE dd02l-tabname
+          iv_target_table TYPE dd02l-tabname
+          iv_guid_field   TYPE string.
+
+    CLASS-METHODS:
+      update_custom_guid_in_s4dbook.
+
+*    CLASS-METHODS
+*      update_foreign_key_guid_old
+*        IMPORTING
+*          iv_forkey_tab  TYPE dd02l-tabname
+*          iv_forkey_guid TYPE string
+*          iv_forkey_f1   TYPE string
+*          iv_forkey_f2   TYPE string OPTIONAL
+*          iv_forkey_f3   TYPE string OPTIONAL
+*          iv_forkey_f4   TYPE string OPTIONAL
+*
+*          iv_check_tab   TYPE dd02l-tabname
+*          iv_check_guid  TYPE string
+*          iv_check_f1    TYPE string
+*          iv_check_f2    TYPE string OPTIONAL
+*          iv_check_f3    TYPE string OPTIONAL
+*          iv_check_f4    TYPE string OPTIONAL
+*        .
+*
+
+
+
+ENDCLASS.
+
+CLASS lcl_data_copy IMPLEMENTATION.
+
+  METHOD copy.
+
+* SCUSTOM
+    copy_and_add_guid(
+      EXPORTING
+        iv_source_table = 'SCUSTOM'
+        iv_target_table = 'DS4CUSTOM'
+        iv_guid_field   = 'CUSTOMGUID'
+    ).
+
+* SFLIGHT
+    copy_and_add_guid(
+      EXPORTING
+        iv_source_table = 'SFLIGHT'
+        iv_target_table = 'DS4FLIGHT'
+        iv_guid_field   = 'FLIGHTGUID'
+    ).
+
+* SBOOK
+    copy_and_add_guid(
+      EXPORTING
+        iv_source_table = 'SBOOK'
+        iv_target_table = 'DS4BOOK'
+        iv_guid_field   = 'BOOKGUID'
+    ).
+
+* CustomGUID in SBOOK
+
+    update_custom_guid_in_s4dbook( ).
+
+  ENDMETHOD.
+
+  METHOD copy_and_add_guid.
+
+    DATA:
+      lr_source TYPE REF TO data,
+      lr_target TYPE REF TO data.
+
+    FIELD-SYMBOLS:
+      <lt_source> TYPE ANY TABLE,
+      <lt_target> TYPE ANY TABLE,
+      <ls_line>   TYPE any,
+      <lv_guid>   TYPE simple.
+
+* Create dynamic data objects
+
+    CREATE DATA lr_source TYPE TABLE OF (iv_source_table).
+    ASSIGN lr_source->* TO <lt_source>.
+
+    CREATE DATA lr_target TYPE TABLE OF (iv_target_table).
+    ASSIGN lr_target->* TO <lt_target>.
+
+
+* Read Source table
+    SELECT * FROM (iv_source_table) INTO TABLE <lt_source>.
+
+
+* Copy and create GUID
+    MOVE-CORRESPONDING <lt_source> TO <lt_target>.
+
+    LOOP AT <lt_target> ASSIGNING <ls_line>.
+
+      ASSIGN COMPONENT iv_guid_field OF STRUCTURE <ls_line> TO <lv_guid>.
+      CALL FUNCTION 'GUID_CREATE'
+        IMPORTING
+          ev_guid_16 = <lv_guid>.    " GUID of length 16 (RAW  Format)
+    ENDLOOP.
+
+* Replace content of  target table
+
+    DELETE FROM (iv_target_table).
+    INSERT (iv_target_table) FROM TABLE <lt_target>.
+
+  ENDMETHOD.
+
+
+  METHOD update_custom_guid_in_s4dbook.
+
+
+    SELECT id, customguid FROM ds4custom INTO TABLE @DATA(lt_custom_keys).
+
+    LOOP AT lt_custom_keys INTO DATA(ls_custom_keys).
+
+
+      UPDATE ds4book SET customguid = ls_custom_keys-customguid
+                     WHERE EXISTS ( SELECT * FROM sbook
+                                         WHERE carrid = ds4book~carrid
+                                           AND connid = ds4book~connid
+                                           AND fldate = ds4book~fldate
+                                           AND bookid = ds4book~bookid
+                                           AND customid = ls_custom_keys-id ).
+
+    ENDLOOP.
+
+  ENDMETHOD.
+*  METHOD update_foreign_key_guid_old.
+*
+*    DATA:
+*      lr_forkey TYPE REF TO data,
+*      lr_check  TYPE REF TO data.
+*
+*    DATA:
+*      lt_forkey_key TYPE string_table,
+*      lt_check_key  TYPE string_table.
+*
+*    DATA lt_where TYPE string_table.
+*    DATA lv_set TYPE string.
+*
+*    FIELD-SYMBOLS:
+*      <lt_forkey> TYPE ANY TABLE,
+*      <lt_check>  TYPE ANY TABLE,
+*      <ls_line>   TYPE any,
+*      <lv_comp>   TYPE simple,
+*      <lv_guid>   TYPE simple.
+*
+*
+** Create dynamic data objects
+*
+*    CREATE DATA lr_forkey TYPE TABLE OF (iv_forkey_tab).
+*    ASSIGN lr_forkey->* TO <lt_forkey>.
+*
+*    CREATE DATA lr_check TYPE TABLE OF (iv_check_tab).
+*    ASSIGN lr_check->* TO <lt_check>.
+*
+*    APPEND iv_forkey_f1 TO lt_forkey_key.
+*    APPEND iv_check_f1  TO lt_check_key.
+*
+*    IF iv_forkey_f2 IS SUPPLIED.
+*      APPEND iv_forkey_f2 TO lt_forkey_key.
+*      APPEND iv_check_f2 TO lt_check_key.
+*    ENDIF.
+*    IF iv_forkey_f3 IS SUPPLIED.
+*      APPEND iv_forkey_f3 TO lt_forkey_key.
+*      APPEND iv_check_f3 TO lt_forkey_key.
+*    ENDIF.
+*    IF iv_forkey_f4 IS SUPPLIED.
+*      APPEND iv_forkey_f4 TO lt_forkey_key.
+*      APPEND iv_check_f4 TO lt_forkey_key.
+*    ENDIF.
+*
+**read check table
+*
+*    SELECT * FROM (iv_check_tab) INTO TABLE <lt_check>
+*             ORDER BY (lt_check_key).
+*
+*    LOOP AT <lt_check> ASSIGNING <ls_line>.
+*
+*      ASSIGN COMPONENT iv_check_guid OF STRUCTURE <ls_line> TO <lv_guid>.
+*
+*      lv_set = |{ iv_forkey_guid } = '{ <lv_guid> }'|.
+*
+*      CLEAR lt_where.
+*      ASSIGN COMPONENT iv_check_f1 OF STRUCTURE <ls_line> TO <lv_comp>.
+*      APPEND |{ iv_forkey_f1 } = '{ <lv_comp> }'| TO lt_where.
+*
+*      IF iv_forkey_f2 IS SUPPLIED.
+*        ASSIGN COMPONENT iv_check_f2 OF STRUCTURE <ls_line> TO <lv_comp>.
+*        APPEND |{ iv_forkey_f2 } = '{ <lv_comp> }'| TO lt_where.
+*      ENDIF.
+*      IF iv_forkey_f3 IS SUPPLIED.
+*        ASSIGN COMPONENT iv_check_f3 OF STRUCTURE <ls_line> TO <lv_comp>.
+*        APPEND |{ iv_forkey_f3 } = '{ <lv_comp> }'| TO lt_where.
+*      ENDIF.
+*      IF iv_forkey_f4 IS SUPPLIED.
+*        ASSIGN COMPONENT iv_check_f4 OF STRUCTURE <ls_line> TO <lv_comp>.
+*        APPEND |{ iv_forkey_f4 } = '{ <lv_comp> }'| TO lt_where.
+*      ENDIF.
+*
+*      UPDATE (iv_forkey_tab) SET (lv_set)  WHERE (lt_where).
+*
+*    ENDLOOP.
+*
+*  ENDMETHOD.
+*
+
+ENDCLASS.
+
+START-OF-SELECTION.
+
+  lcl_data_copy=>copy( ).
+
+  MESSAGE 'Success' TYPE 'S'.
