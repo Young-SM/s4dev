@@ -1,0 +1,9 @@
+@EndUserText.label: 'Connection Authorization' 
+@MappingRole: true 
+define role Ds4_I_Connection
+   { 
+     grant select 
+        on DS4_I_Connection 
+     where ( AirlineID ) = aspect pfcg_auth( S_CARRID, CARRID ); 
+   }
+   
