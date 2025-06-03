@@ -1,0 +1,29 @@
+@EndUserText.label: 'Solution: Customer'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+
+define root view entity DS4_C_Customer_S1
+  as projection on DS4_I_Customer
+{
+  key CustomerGuid,
+
+      CustomerNumber,
+
+      Form,
+      CustomerName,
+
+      Street,
+      PostCode,
+
+      City,
+      Country,
+
+      Email,
+      Telephone,
+      Discount,
+
+      changed_at,
+
+      /* Associations */
+      _Bookings : redirected to composition child DS4_C_Booking_S1
+
+}
