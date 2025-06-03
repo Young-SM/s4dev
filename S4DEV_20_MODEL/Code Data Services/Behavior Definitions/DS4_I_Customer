@@ -1,0 +1,86 @@
+managed implementation in class bp_ds4_i_customer unique;
+with draft;
+
+define behavior for DS4_I_Customer alias Customer
+persistent table ds4custom
+draft table ds4custom_rap_d
+lock master total etag changed_at
+authorization master ( instance )
+etag master changed_at
+{
+  create;
+  update;
+  delete;
+  association _Bookings { create; with draft; }
+
+  field ( numbering : managed, readonly ) CustomerGuid;
+  field ( readonly ) CustomerNumber;
+  field ( mandatory ) CustomerName;
+
+  determination create_CustomerNumber on modify { create; }
+
+  validation filled_CustomerName on save
+  { create;
+    update;
+    field CustomerName;
+  }
+
+
+  // explicitly declare the draft actions
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+
+  // assign prepare to validations/determinations
+  draft determine action Prepare
+  {
+    validation filled_CustomerName;
+  }
+
+
+  mapping for ds4custom corresponding
+  {
+    CustomerGuid = customguid;
+    CustomerNumber = id;
+    CustomerName = name;
+  }
+}
+
+define behavior for DS4_I_Booking alias Booking
+persistent table ds4book
+draft table ds4book_rap_d
+lock dependent by _Customer
+authorization dependent by _Customer
+//etag master <field_name>
+{
+  update;
+  delete;
+
+  field ( numbering : managed, readonly ) BookingGuid;
+  field ( readonly ) BookingNumber, BookingDate, CustomerGuid, IsCancelled;
+  field ( mandatory ) AirlineID, Class, ForeignCurrencyPayment, ForeignCurrency;
+
+  action cancel_booking;
+
+  determination create_BookingNumber on modify { create; }
+  determination set_BookingDate on modify { create; }
+
+  association _Customer { with draft; }
+
+  mapping for ds4book corresponding
+  {
+    BookingGuid = bookguid;
+    AirlineID = carrid;
+    ConnectionNumber = connid;
+    FlightDate = fldate;
+    BookingNumber = bookid;
+    BookingDate = order_date;
+
+    ForeignCurrencyPayment = forcuram;
+    ForeignCurrency = forcurkey;
+    AgencyNumber = agencynum;
+    CustomerGuid = customguid;
+    IsCancelled = cancelled;
+  }
+}
