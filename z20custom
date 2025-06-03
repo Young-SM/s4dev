@@ -1,0 +1,46 @@
+@EndUserText.label : 'Flugkunden'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_CHARACTER_NUMERIC
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table z20custom {
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  key mandt      : s_mandt not null
+    with foreign key [0..*,1] t000
+      where mandt = z20custom.mandt;
+  key customguid : s4d_custom_guid not null;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Fluggeschäftspartner'
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  id             : s_customer not null
+    with foreign key [0..1,1] sbuspart
+      where mandant = z20custom.mandt
+        and buspartnum = z20custom.id
+    with value help scustom
+      where city = z20custom.city
+        and country = z20custom.country
+        and id = z20custom.id
+        and name = z20custom.name;
+  name           : s_custname not null;
+  form           : s_form not null;
+  street         : s_street not null;
+  postbox        : s_postbox not null;
+  postcode       : postcode not null;
+  city           : city not null;
+  country        : s_country not null;
+  region         : s_region not null;
+  telephone      : s_phoneno not null;
+  custtype       : s_custtype not null;
+  discount       : s_discount not null;
+  @AbapCatalog.textLanguage
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Sprachtabelle'
+  @AbapCatalog.foreignKey.screenCheck : true
+  langu          : spras not null
+    with foreign key t002
+      where spras = z20custom.langu;
+  email          : s_email not null;
+  webuser        : s_webname not null;
+  changed_at     : s_changedat not null;
+
+}
