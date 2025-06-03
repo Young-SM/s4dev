@@ -1,0 +1,27 @@
+@VDM.viewType: #BASIC
+
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@ObjectModel.representativeKey: 'City'
+@Analytics.technicalName: 'DS4ICITY'
+
+@Search.searchable: true
+
+@EndUserText.label: 'City'
+define view entity DS4_I_City
+  as select from sgeocity
+{
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+      @Semantics.address.city: true
+  key city      as City,
+
+      @Semantics.address.country: true
+  key country   as Country,
+
+      @Semantics.geoLocation.latitude: true
+      latitude  as Latitude,
+
+      @Semantics.geoLocation.longitude: true
+      longitude as Longitude
+
+}
