@@ -1,0 +1,9 @@
+@EndUserText.label: 'Flight Authorization' 
+@MappingRole: true 
+define role Ds4_I_Flight
+   {    
+     grant select 
+        on DS4_I_Flight 
+     where ( AirlineID ) = aspect pfcg_auth( S_CARRID, CARRID ); 
+   }
+   
