@@ -1,0 +1,49 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Flight Booking'
+
+define view entity DS4_I_Booking
+  as select from ds4book
+  association     to parent DS4_I_Customer as _Customer     on  $projection.CustomerGuid = _Customer.CustomerGuid
+  association [1] to DS4_I_Airline         as _Airline      on  $projection.AirlineID = _Airline.AirlineID
+  association [1] to DS4_I_Connection      as _Connection   on  $projection.AirlineID        = _Connection.AirlineID
+                                                            and $projection.ConnectionNumber = _Connection.ConnectionNumber
+  association [1] to DS4_I_TravelAgency    as _TravelAgency on  $projection.AgencyNumber = _TravelAgency.AgencyNumber
+  association [1] to I_Currency            as _ForeignCurr  on  $projection.ForeignCurrency = _ForeignCurr.Currency
+
+{
+      // Fields
+  key bookguid   as BookingGuid,
+
+      @ObjectModel.foreignKey.association: '_Airline'
+      carrid     as AirlineID,
+
+      @ObjectModel.foreignKey.association: '_Connection'
+      connid     as ConnectionNumber,
+
+      fldate     as FlightDate,
+      bookid     as BookingNumber,
+
+      @ObjectModel.text.element: ['ClassDescription']
+      class      as Class,
+
+      @Semantics.amount.currencyCode: 'ForeignCurrency'
+      forcuram   as ForeignCurrencyPayment,
+
+      @ObjectModel.foreignKey.association: '_ForeignCurr'
+      forcurkey  as ForeignCurrency,
+
+      order_date as BookingDate,
+
+      @ObjectModel.foreignKey.association: '_TravelAgency'
+      agencynum  as AgencyNumber,
+
+      customguid as CustomerGuid,
+      cancelled  as IsCancelled,
+
+      // Associations
+      _Customer,
+      _Airline,
+      _Connection,
+      _TravelAgency,
+      _ForeignCurr
+}
