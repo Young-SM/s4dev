@@ -1,0 +1,78 @@
+@EndUserText.label : 'Einzelflugbuchung'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_CHARACTER_NUMERIC
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table ds4book {
+  @AbapCatalog.foreignKey.screenCheck : true
+  key mandt    : s_mandt not null
+    with foreign key t000
+      where mandt = ds4book.mandt;
+  key bookguid : s4d_booking_guid not null;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Fluggesellschaft'
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  carrid       : s_carr_id not null
+    with foreign key [0..*,1] scarr
+      where mandt = ds4book.mandt
+        and carrid = ds4book.carrid;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Flugverbindung'
+  @AbapCatalog.foreignKey.screenCheck : true
+  connid       : s_conn_id not null
+    with foreign key spfli
+      where mandt = ds4book.mandt
+        and carrid = ds4book.carrid
+        and connid = ds4book.connid;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Flugtabelle'
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  fldate       : s_date not null
+    with foreign key [0..*,1] sflight
+      where mandt = ds4book.mandt
+        and carrid = ds4book.carrid
+        and connid = ds4book.connid
+        and fldate = ds4book.fldate;
+  bookid       : s_book_id not null;
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  customguid   : s4d_custom_guid not null
+    with foreign key [0..*,1] ds4custom
+      where mandt = ds4book.mandt
+        and customguid = ds4book.customguid;
+  @Semantics.quantity.unitOfMeasure : 'ds4book.wunit'
+  luggweight   : s_lugweigh not null;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Einheiten'
+  @AbapCatalog.foreignKey.screenCheck : true
+  wunit        : s_weiunit not null
+    with foreign key t006
+      where mandt = ds4book.mandt
+        and msehi = ds4book.wunit;
+  invoice      : s_invflag not null;
+  class        : s_class not null;
+  @Semantics.amount.currencyCode : 'ds4book.forcurkey'
+  forcuram     : s_f_cur_pr not null;
+  @AbapCatalog.foreignKey.keyType : #NON_KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  forcurkey    : s_curr not null
+    with foreign key [0..*,1] scurx
+      where currkey = ds4book.forcurkey;
+  order_date   : s_bdate not null;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Verkaufsstelle'
+  @AbapCatalog.foreignKey.keyType : #NON_KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  counter      : s_countnum
+    with foreign key [0..*,1] scounter
+      where mandt = ds4book.mandt
+        and carrid = ds4book.carrid
+        and countnum = ds4book.counter;
+  @AbapCatalog.foreignKey.label : 'Prüfung gegen Reisebüro'
+  @AbapCatalog.foreignKey.keyType : #NON_KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  agencynum    : s_agncynum
+    with foreign key [0..*,1] stravelag
+      where mandt = ds4book.mandt
+        and agencynum = ds4book.agencynum;
+  cancelled    : s_cancel;
+  reserved     : s_reserv;
+
+}
