@@ -1,0 +1,13 @@
+Booking
+S1 - Solution: Data Model - Booking
+S2 - Solution: OData Service - Booking
+S3 - Solution: Fiori Application - Booking
+S4 - Solution: Transactional Processing - Booking
+S5 - Solution: Draft Handling - Booking
+Customer
+S1- Solution: Data Model - Customer
+S2 - Solution: OData Service - Customer
+S3 - Solution: Fiori Application - Customer
+S4 - Solution: Transactional Processing - Customer
+S5 - Solution: Draft Handling - Customer
+
