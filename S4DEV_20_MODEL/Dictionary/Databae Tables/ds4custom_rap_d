@@ -1,0 +1,22 @@
+@EndUserText.label : 'Draft table for entity DS4_I_CUSTOMER'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ds4custom_rap_d {
+  key mandt        : mandt not null;
+  key customerguid : s4d_custom_guid not null;
+  customernumber   : s_customer;
+  form             : s_form;
+  customername     : s_custname;
+  street           : s_street;
+  postcode         : postcode;
+  city             : city;
+  country          : s_country;
+  email            : s_email;
+  telephone        : s_phoneno;
+  discount         : s_discount;
+  changed_at       : s_changedat;
+  "%admin"         : include sych_bdl_draft_admin_inc;
+
+}
