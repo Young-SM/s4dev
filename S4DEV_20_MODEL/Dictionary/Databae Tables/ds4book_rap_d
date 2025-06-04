@@ -1,0 +1,23 @@
+@EndUserText.label : 'Draft table for entity DS4_I_BOOKING'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table ds4book_rap_d {
+  key mandt              : mandt not null;
+  key bookingguid        : s4d_booking_guid not null;
+  airlineid              : s_carr_id;
+  connectionnumber       : s_conn_id;
+  flightdate             : s_date;
+  bookingnumber          : s_book_id;
+  class                  : s_class;
+  @Semantics.amount.currencyCode : 'ds4book_rap_d.foreigncurrency'
+  foreigncurrencypayment : s_f_cur_pr;
+  foreigncurrency        : s_curr;
+  bookingdate            : s_bdate;
+  agencynumber           : s_agncynum;
+  customerguid           : s4d_custom_guid;
+  iscancelled            : s_cancel;
+  "%admin"               : include sych_bdl_draft_admin_inc;
+
+}
