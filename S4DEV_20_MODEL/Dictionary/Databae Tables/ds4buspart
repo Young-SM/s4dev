@@ -1,0 +1,18 @@
+@EndUserText.label : 'Fluggeschäftspartner'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table ds4buspart {
+  @AbapCatalog.foreignKey.keyType : #KEY
+  @AbapCatalog.foreignKey.screenCheck : true
+  key mandant    : s_mandt not null
+    with foreign key [0..*,1] t000
+      where mandt = ds4buspart.mandant;
+  key buspartnum : s_buspanum not null;
+  contact        : s_contact;
+  contphono      : s_cphoneno;
+  buspatyp       : s_buspatyp;
+  buspaguid      : s4d_buspart_guid;
+
+}
